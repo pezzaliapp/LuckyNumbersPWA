@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <title>Lucky Numbers • PWA</title>
+  <meta name="description" content="Generatore di numeri fortunati personalizzati: nome, data di nascita e giorno. PWA gratuita, offline-ready.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root{
+      --bg:#0e0f12;
+      --card:#16181d;
+      --acc:#36d399;
+      --txt:#f5f7fb;
+      --mut:#94a3b8;
+      --ring:#3b82f6;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--txt);
+      background: radial-gradient(1200px 800px at 20% -10%, #1b1f2a 10%, var(--bg) 60%) no-repeat, var(--bg);
+      display:flex;align-items:center;justify-content:center; padding:16px;
+    }
+    .app{width:100%;max-width:920px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:12px;margin-bottom:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:42px;height:42px;border-radius:12px;background:#111 url('icon-192.png') center/cover no-repeat;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+    h1{margin:0;font-size:clamp(20px,2.2vw,28px)}
+    p.lead{margin:.25rem 0 0;color:var(--mut)}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;padding:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+    }
+    .grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media (min-width:860px){ .grid{grid-template-columns: 1.1fr .9fr} }
+    label{display:block;font-size:14px;color:var(--mut);margin-bottom:6px}
+    input[type="text"], input[type="date"]{
+      width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+      background: #0c0d10;color:var(--txt);outline: none;
+    }
+    input:focus{border-color:var(--ring); box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+    .row{display:flex;gap:12px}
+    .row > *{flex:1}
+    .switch{display:flex;align-items:center;gap:10px;margin-top:8px}
+    .switch input{width:42px;height:26px;appearance:none;background:#242634;border-radius:999px;position:relative;outline:none;border:1px solid rgba(255,255,255,.1);}
+    .switch input:checked{background:#123026;border-color:#1f6f57}
+    .switch input:before{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;background:#fff;border-radius:999px;transition:.2s}
+    .switch input:checked:before{transform:translateX(16px);}
+    button.primary{
+      width:100%;padding:14px 16px;border-radius:12px;border:none;cursor:pointer;
+      background:linear-gradient(90deg, #22c55e, #16a34a);color:#07120a;font-weight:700;letter-spacing:.3px;
+      box-shadow:0 8px 24px rgba(34,197,94,.35);
+    }
+    .nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px}
+    .tile{
+      background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px;
+    }
+    .tile h3{margin:0 0 8px;font-size:14px;color:var(--mut);font-weight:600}
+    .balls{display:flex;flex-wrap:wrap;gap:6px}
+    .ball{
+      width:42px;height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+      background: radial-gradient(circle at 30% 25%, #ffffff, #e2e8f0);
+      color:#0b1020;font-weight:800;border:1px solid rgba(0,0,0,.12);text-shadow:0 1px 0 rgba(255,255,255,.6);
+    }
+    .ball.star{background: radial-gradient(circle at 30% 25%, #fff1c1, #facc15);}
+    .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    .ghost{background:#111827;border:1px solid rgba(255,255,255,.09);color:var(--txt);padding:12px 14px;border-radius:12px;cursor:pointer}
+    .note{color:var(--mut);font-size:12px;margin-top:10px}
+    footer{margin-top:16px;color:var(--mut);font-size:12px;text-align:center}
+    a{color:var(--acc);text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Lucky Numbers</h1>
+          <p class="lead">Numeri “su misura” per chi ama i segni del destino ✨</p>
+        </div>
+      </div>
+      <button id="installBtn" class="ghost">Installa</button>
+    </header>
+
+    <div class="card grid">
+      <section>
+        <div class="row">
+          <div>
+            <label for="name">Nome di battesimo</label>
+            <input id="name" type="text" placeholder="Es. Martina">
+          </div>
+          <div>
+            <label for="dob">Data di nascita</label>
+            <input id="dob" type="date">
+          </div>
+        </div>
+        <div class="switch">
+          <input id="mystic" type="checkbox" aria-label="Attiva Mystic Mode">
+          <span>Mystic Mode (✨ più simboli e numerologia)</span>
+        </div>
+        <div class="switch">
+          <input id="daily" type="checkbox" checked aria-label="Aggiorna in base al giorno">
+          <span>Legato al giorno (cambia ogni giorno)</span>
+        </div>
+        <div style="margin-top:12px">
+          <button id="go" class="primary">Genera i numeri fortunati</button>
+        </div>
+        <div class="actions">
+          <button id="copyBtn" class="ghost">Copia</button>
+          <button id="shareBtn" class="ghost">Condividi</button>
+        </div>
+        <p class="note">Nota: è un gioco di intrattenimento. Niente vincite garantite. Gioca responsabilmente.</p>
+      </section>
+
+      <section>
+        <div id="results" class="nums" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <footer>
+      <p>© <span id="year"></span> Lucky Numbers — PWA offline. <a href="#" id="how">Come funziona</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // Simple service worker registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
+    }
+
+    // PWA install prompt
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-block';
+    });
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    });
+
+    // Utils: FNV-1a hash → seeded PRNG (Mulberry32)
+    function fnv1a(str){
+      let h = 0x811c9dc5;
+      for (let i=0;i<str.length;i++){
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+        h >>>= 0;
+      }
+      return h >>> 0;
+    }
+    function mulberry32(a){
+      return function(){
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      }
+    }
+    function rangeUnique(prng, count, min, max){
+      const set = new Set();
+      while(set.size < count){
+        const n = Math.floor(prng() * (max - min + 1)) + min;
+        set.add(n);
+      }
+      return Array.from(set).sort((a,b)=>a-b);
+    }
+    function numerology(name, dobStr){
+      // Reduce letters A=1..Z=26, sum + DOB digits → single digit (1..9) or master (11,22)
+      const clean = (name || '').toUpperCase().replace(/[^A-Z]/g,'');
+      let sum = 0;
+      for (const ch of clean){ sum += (ch.charCodeAt(0) - 64); }
+      const digits = (dobStr||'').replace(/[^0-9]/g,'');
+      for (const d of digits){ sum += Number(d); }
+      const reduce = (n)=>{
+        if (n===11||n===22) return n;
+        while(n>9){ n = String(n).split('').reduce((a,b)=>a+Number(b),0); if (n===11||n===22) break; }
+        return n;
+      };
+      return reduce(sum);
+    }
+    function zodiac(d){
+      if(!d) return '—';
+      const day=d.getUTCDate(), mon=d.getUTCMonth()+1;
+      const z=[
+        ['Capricorno',1,19],['Acquario',2,18],['Pesci',3,20],['Ariete',4,19],['Toro',5,20],['Gemelli',6,20],
+        ['Cancro',7,22],['Leone',8,22],['Vergine',9,22],['Bilancia',10,22],['Scorpione',11,21],['Sagittario',12,21],['Capricorno',12,31]
+      ];
+      const mmdd = mon*100+day;
+      const cuts=[119,218,320,419,520,620,722,822,922,1022,1121,1221,1231];
+      for(let i=0;i<cuts.length;i++){ if(mmdd<=cuts[i]) return z[i][0]; }
+      return 'Capricorno';
+    }
+
+    function generate(){
+      const name = document.getElementById('name').value.trim();
+      const dob = document.getElementById('dob').value;
+      const mystic = document.getElementById('mystic').checked;
+      const daily = document.getElementById('daily').checked;
+
+      const keyDate = new Date();
+      const dayStr = daily ? keyDate.toISOString().slice(0,10) : 'ANYDAY';
+      const seedStr = `${name}|${dob}|${dayStr}|L0v3-Luck`;
+      const seed = fnv1a(seedStr);
+      const rnd = mulberry32(seed);
+
+      const dobDate = dob ? new Date(dob) : null;
+      const zod = zodiac(dobDate);
+      const life = numerology(name, dob);
+
+      const euro5 = rangeUnique(rnd, 5, 1, 50);
+      const euro2 = rangeUnique(rnd, 2, 1, 12);
+      const lotto = rangeUnique(rnd, 6, 1, 90);
+      const daily5 = rangeUnique(rnd, 5, 1, 39);
+      const power = rangeUnique(rnd, 5, 1, 69);
+      const powerStar = rangeUnique(rnd, 1, 1, 26);
+
+      const vibes = ['💫','✨','🌀','🌟','🔮','🧲','🪄','🍀'];
+      const vibe = vibes[Math.floor(rnd()*vibes.length)];
+
+      const results = [
+        {title:`Euro-style 5/50 + 2/12`, balls:euro5, stars:euro2},
+        {title:`Classico 6 su 90`, balls:lotto},
+        {title:`Daily Pick 5 (1–39)`, balls:daily5},
+        {title:`Power 5/69 + 1/26`, balls:power, stars:powerStar},
+        {title:`Numero personale`, balls:[life]},
+        {title:`Segno`, balls:[zod]}
+      ];
+
+      const wrap = (arr, starArr) => {
+        const b = arr.map(n=>`<div class="ball">${n}</div>`).join('');
+        const s = starArr? starArr.map(n=>`<div class="ball star">★${n}</div>`).join(''):'';
+        return `<div class="balls">${b}${s}</div>`;
+      };
+
+      const resEl = document.getElementById('results');
+      resEl.innerHTML = results.map(r=>`
+        <div class="tile">
+          <h3>${r.title} ${mystic? vibe:''}</h3>
+          ${wrap(r.balls, r.stars)}
+        </div>
+      `).join('');
+
+      // Prepare share/copy text
+      window._lastShare = `Lucky Numbers — ${name||'Anonimo'} (${dob||'—'})\n` +
+        results.map(r=>{
+          const numbers = [...r.balls].join(' ');
+          const stars = r.stars? ' | ★ ' + [...r.stars].join(' ') : '';
+          return `• ${r.title}: ${numbers}${stars}`;
+        }).join('\n')
+        + `\nOggi: ${dayStr} — PWA: ${location.href}`;
+    }
+
+    document.getElementById('go').addEventListener('click', generate);
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    document.getElementById('copyBtn').addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(window._lastShare || 'Apri la PWA e genera prima i numeri 🙂');
+        alert('Copiato!');
+      }catch(e){ alert('Impossibile copiare.'); }
+    });
+    document.getElementById('shareBtn').addEventListener('click', async ()=>{
+      const text = window._lastShare || 'Apri la PWA e genera prima i numeri 🙂';
+      if (navigator.share){
+        try{ await navigator.share({title:'Lucky Numbers', text}); }catch(e){}
+      }else{
+        try{ await navigator.clipboard.writeText(text); alert('Copiato!'); }catch(e){ alert('Impossibile condividere.'); }
+      }
+    });
+
+    // “Come funziona” modal (quick)
+    document.getElementById('how').addEventListener('click', (e)=>{
+      e.preventDefault();
+      alert('Usiamo un seme derivato da nome, data di nascita e giorno corrente per creare numeri casuali riproducibili. È intrattenimento: gioca con testa!');
+    });
+
+    // Auto-generate on load if name+dob stored
+    const params = new URLSearchParams(location.search);
+    if (params.get('demo')==='1'){ document.getElementById('name').value='Alex'; document.getElementById('dob').value='1980-06-12'; }
+  </script>
+</body>
+</html>
